@@ -6,7 +6,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Student {
+public class StudentDto {
 
     private Integer id;
     private String name;

@@ -1,69 +1,105 @@
 package com.example.PracticeSBProject.service;
 
-import com.example.PracticeSBProject.dto.Student;
+import com.example.PracticeSBProject.dto.StudentDto;
+import com.example.PracticeSBProject.entity.Student;
 import com.example.PracticeSBProject.exception.ResourceNotFoundException;
+import com.example.PracticeSBProject.repository.StudentRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class StudentService {
 
-    private Map<Integer,Student> studentDb = new HashMap<>();
+    private final StudentRepository studentRepository;
 
+//    Without Database We can use this
+//    private Map<Integer, StudentDto> studentDb = new HashMap<>();
 
-//    public List<Student> getAllStudents() {
-//        return ;
-//    }
     //Create
-    public Student createStudent(Student student) {
+    public StudentDto createStudent(StudentDto student) {
+        Student studentEntity = new Student();
 
-        studentDb.putIfAbsent(student.getId(),student);
-        return student;
+        studentEntity.setName(student.getName());
+        studentEntity.setSection(student.getSection());
+        studentEntity.setRoll_number(student.getRoll_number());
+        studentEntity.setWhich_class(student.getWhich_class());
+
+        Student savedStudent = studentRepository.save(studentEntity);
+
+        return mapToDTO(savedStudent);
+
     }
 
     //GetAll
-    public List<Student> getAllStudent()
+    public List<StudentDto> getAllStudent()
     {
-        return new ArrayList<>(studentDb.values());
+        List<Student> studentList = new ArrayList<>(studentRepository.findAll());
+        List<StudentDto> studentDtoList = new ArrayList<>();
+        for (Student student : studentList)
+        {
+            studentDtoList.add(mapToDTO(student));
+        }
+        return studentDtoList;
     }
 
     //GetByID
-    public Student getStudentById(Integer id)
+    public StudentDto getStudentById(Integer id)
     {
-        if (!studentDb.containsKey(id))
-        {
-            return null;
-        }
-        return studentDb.get(id);
+        Student student = studentRepository.findById(id)
+                .orElseThrow(()->new ResourceNotFoundException
+                        ("User with Id "+ id + " Doesn't Exist,Please Give Correct Id"));
+
+
+        return mapToDTO(student);
     }
     //Update User
-    public Student updateStudent(Student student,Integer id)
+    public StudentDto updateStudent(StudentDto studentDto, Integer id)
     {
-        if (!studentDb.containsKey(id))
-        {
-            throw new ResourceNotFoundException("User with Id "+ id + " Doesn't Exist,Please Give Correct Id");
-        }
-        studentDb.put(id,student);
-        return student;
+        Student student = studentRepository.findById(id).
+                orElseThrow(()-> new ResourceNotFoundException("User not found with : " +id));
+
+        student.setName(studentDto.getName());
+        student.setSection(studentDto.getSection());
+        student.setWhich_class(studentDto.getWhich_class());
+        student.setRoll_number(studentDto.getRoll_number());
+
+
+
+        studentRepository.save(student);
+
+        return mapToDTO(student);
     }
 
 
 
     //Delete
-    public boolean deleteStudent(Integer id)
+    public void deleteStudent(Integer id)
     {
-        if (!studentDb.containsKey(id))
-        {
-            throw new ResourceNotFoundException("User with Id "+ id + " Doesn't Exist,Please Give Correct Id");
-        }
+        Student student = studentRepository.findById(id).
+                orElseThrow(()-> new ResourceNotFoundException("User with Id "+ id + " Doesn't Exist,Please Give Correct Id"));
+        studentRepository.delete(student);
 
-        studentDb.remove(id);
-        return true;
     }
+
+    //Create a mapper method to map the enity to Dto
+    private StudentDto mapToDTO(Student student)
+    {
+        return new StudentDto(
+                student.getId(),
+                student.getName(),
+                student.getRoll_number(),
+                student.getWhich_class(),
+                student.getSection()
+        );
+
+    }
+
+
+
+
     //TODO : Create a implement Service Class
 
 }
