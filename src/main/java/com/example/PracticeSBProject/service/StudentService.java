@@ -5,6 +5,8 @@ import com.example.PracticeSBProject.entity.Student;
 import com.example.PracticeSBProject.exception.ResourceNotFoundException;
 import com.example.PracticeSBProject.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -13,6 +15,9 @@ import java.util.*;
 @RequiredArgsConstructor
 public class StudentService {
 
+    Logger log = LoggerFactory.getLogger(StudentService.class);
+
+
     private final StudentRepository studentRepository;
 
 //    Without Database We can use this
@@ -20,6 +25,10 @@ public class StudentService {
 
     //Create
     public StudentDto createStudent(StudentDto student) {
+
+        log.info("Trying to create student with information {}", student);
+
+
         Student studentEntity = new Student();
 
         studentEntity.setName(student.getName());
@@ -28,6 +37,13 @@ public class StudentService {
         studentEntity.setWhich_class(student.getWhich_class());
 
         Student savedStudent = studentRepository.save(studentEntity);
+
+
+
+
+
+
+
 
         return mapToDTO(savedStudent);
 
@@ -42,6 +58,7 @@ public class StudentService {
         {
             studentDtoList.add(mapToDTO(student));
         }
+        log.info("Fetching the list of students {}", studentDtoList);
         return studentDtoList;
     }
 
@@ -52,7 +69,7 @@ public class StudentService {
                 .orElseThrow(()->new ResourceNotFoundException
                         ("User with Id "+ id + " Doesn't Exist,Please Give Correct Id"));
 
-
+        log.info("Fetching a student with Id : {}" ,student.getId());
         return mapToDTO(student);
     }
     //Update User
@@ -70,6 +87,8 @@ public class StudentService {
 
         studentRepository.save(student);
 
+        log.info("Updating a student with Name : {}" ,student.getName());
+
         return mapToDTO(student);
     }
 
@@ -81,6 +100,8 @@ public class StudentService {
         Student student = studentRepository.findById(id).
                 orElseThrow(()-> new ResourceNotFoundException("User with Id "+ id + " Doesn't Exist,Please Give Correct Id"));
         studentRepository.delete(student);
+
+        log.info("Deleting a student with Name : {}" , student.getName());
 
     }
 
